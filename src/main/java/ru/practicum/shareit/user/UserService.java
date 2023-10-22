@@ -39,11 +39,11 @@ public class UserService {
         userStorage.deleteUser(userId);
     }
 
-    public List<UserDto> getAllUser(){
-        return  userStorage.getAllUser().stream().map(user -> MapperUser.mapToUserDto(user)).collect(Collectors.toList());
+    public List<UserDto> getAllUser() {
+        return userStorage.getAllUser().stream().map(user -> MapperUser.mapToUserDto(user)).collect(Collectors.toList());
     }
 
-    private void  validation(User user) {
+    private void validation(User user) {
         if (user.getEmail() == null) {
             throw new ValidationException("Email is not valid");
         }
@@ -51,8 +51,11 @@ public class UserService {
             throw new ValidationException("Email is not valid");
         }
     }
-    private void checkExistsEmail(User user){
-        if(getAllUser().stream().filter(user1 -> user1.getEmail().equals(user.getEmail())&&user1.getId()!=user.getId()).findFirst().isPresent()){
+
+    private void checkExistsEmail(User user) {
+        if (getAllUser().stream()
+                .filter(user1 -> user1.getEmail().equals(user.getEmail()) && user1.getId() != user.getId())
+                .findFirst().isPresent()) {
             throw new DuplicateEmailException("This email already exists");
         }
     }
