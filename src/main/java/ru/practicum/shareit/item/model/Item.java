@@ -7,6 +7,7 @@ import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TODO Sprint add-controllers.
@@ -15,16 +16,16 @@ import java.util.ArrayList;
 @AllArgsConstructor
 public class Item {
     private int id;
-    private User user;
+    private User owner;
     private String name;
     private String description;
     private Boolean available;
-    private ArrayList<Booking> reservation;
-    private ArrayList<Reviews> reviews;
+    private List<Booking> reservation;
+    private List<Reviews> reviews;
     private ItemRequest request;
 
-    public Item(User user, String name, String description) {
-        this.user = user;
+    public Item(User owner, String name, String description) {
+        this.owner = owner;
         this.name = name;
         this.description = description;
         reservation = new ArrayList<>();

@@ -30,24 +30,14 @@ public class ItemStorageInMemory implements ItemStorage {
 
     @Override
     public Item updateItem(Item item) {
-        Item oldItem = itemStorage.get(item.getId());
-        if (item.getName() != null && !item.getName().equals(oldItem.getName())) {
-            oldItem.setName(item.getName());
-        }
-        if (item.getDescription() != null && !item.getDescription().equals(oldItem.getDescription())) {
-            oldItem.setDescription(item.getDescription());
-        }
-        if (item.getAvailable() != null && !item.getAvailable() == oldItem.getAvailable()) {
-            oldItem.setAvailable(item.getAvailable());
-        }
-        itemStorage.put(oldItem.getId(), oldItem);
-        return oldItem;
+        itemStorage.put(item.getId(), item);
+        return item;
     }
 
     @Override
     public List<Item> getAllUserItems(int userId) {
         return itemStorage.values().stream()
-                .filter(item -> item.getUser().getId() == userId)
+                .filter(item -> item.getOwner().getId() == userId)
                 .collect(Collectors.toList());
     }
 

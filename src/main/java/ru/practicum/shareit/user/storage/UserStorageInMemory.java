@@ -5,13 +5,14 @@ import ru.practicum.shareit.user.User;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
 public class UserStorageInMemory implements UserStorage {
 
     private int id;
-    private HashMap<Integer, User> userStorage;
+    private Map<Integer, User> userStorage;
 
     public UserStorageInMemory(HashMap<Integer, User> userStorage) {
         this.id = 1;
@@ -34,12 +35,6 @@ public class UserStorageInMemory implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        if (user.getEmail() == null) {
-            user.setEmail(userStorage.get(user.getId()).getEmail());
-        }
-        if (user.getName() == null) {
-            user.setName(userStorage.get(user.getId()).getName());
-        }
         userStorage.put(user.getId(), user);
         return user;
     }
