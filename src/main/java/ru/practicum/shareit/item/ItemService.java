@@ -19,7 +19,6 @@ import ru.practicum.shareit.item.storage.ItemDBStorage;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserDBStorage;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
