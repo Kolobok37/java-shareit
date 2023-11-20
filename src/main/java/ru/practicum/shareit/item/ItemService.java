@@ -101,7 +101,8 @@ public class ItemService {
     }
 
     private User validationUser(Long userId) {
-        Optional<User> user = userStorage.getAllUser().stream().filter(user1 -> user1.getId() == userId).findFirst();
+        Optional<User> user = userStorage.getAllUser().stream()
+                .filter(user1 -> Objects.equals(user1.getId(), userId)).findFirst();
         if (user.isEmpty()) {
             throw new NotFoundException("User is not specified");
         }

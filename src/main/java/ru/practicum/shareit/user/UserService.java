@@ -10,6 +10,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,7 +62,7 @@ public class UserService {
 
     private void checkExistsEmail(User user) throws DuplicateEmailDataException {
         if (getAllUser().stream().anyMatch(user1 -> user1.getEmail()
-                .equals(user.getEmail()) && user1.getId() != user.getId())) {
+                .equals(user.getEmail()) && !Objects.equals(user1.getId(), user.getId()))) {
             throw new DuplicateEmailDataException("This email already exists");
         }
     }

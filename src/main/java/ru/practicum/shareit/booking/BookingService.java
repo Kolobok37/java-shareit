@@ -14,6 +14,7 @@ import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,7 +32,7 @@ public class BookingService {
         booking.setStatus(Status.WAITING);
         booking.setBooker(userStorage.getUser(userId));
         validationBookingRequest(booking);
-        if (userId == booking.getItem().getOwner().getId()) {
+        if (Objects.equals(userId, booking.getItem().getOwner().getId())) {
             throw new NotFoundException("The owner cannot book the item.");
         }
         bookingStorage.createBooking(booking);
@@ -54,7 +55,7 @@ public class BookingService {
         if (!booking.getStatus().equals(Status.WAITING)) {
             throw new ReservationException("No access to booking.");
         }
-        if (userId != booking.getItem().getOwner().getId()) {
+        if (!Objects.equals(userId, booking.getItem().getOwner().getId())) {
             throw new NotFoundException("No access to booking.");
         }
         if (approved) {
@@ -106,12 +107,12 @@ public class BookingService {
                 || item.getNextBooking().getStatus().equals(Status.REJECTED))) {
             Optional<Booking> lastBooking = filterBooking(bookingStorage
                     .getBookingsUser(booking.getItem().getOwner().getId()), "PAST")
-                    .stream().filter(booking1 -> booking1.getItem().getId() == item.getId()).findFirst();
+                    .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId())).findFirst();
             lastBooking.ifPresent(item::setLastBooking);
             Optional<Booking> nextBooking =
                     filterBooking(bookingStorage.getBookingsUser(booking.getItem().getOwner().getId()), "FUTURE")
-                            .stream().filter(booking1 -> booking1.getItem().getId() == item.getId())
-                            .min((b2, b1) -> b2.getStart().compareTo(b1.getStart()));
+                            .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId()))
+                            .min(Comparator.comparing(Booking::getStart));
             if (nextBooking.isPresent()) {
                 item.setNextBooking(nextBooking.get());
             } else {

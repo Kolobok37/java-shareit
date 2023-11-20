@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,11 +33,11 @@ public class BookingDBStorage {
 
     public List<Booking> getBookingsUser(Long userId) {
         return bookingRepository.findAll().stream()
-                .filter(booking -> booking.getBooker().getId() == userId).collect(Collectors.toList());
+                .filter(booking -> Objects.equals(booking.getBooker().getId(), userId)).collect(Collectors.toList());
     }
 
     public List<Booking> getBookingsOwner(Long userId) {
         return bookingRepository.findAll().stream()
-                .filter(booking -> booking.getItem().getOwner().getId() == userId).collect(Collectors.toList());
+                .filter(booking -> Objects.equals(booking.getItem().getOwner().getId(), userId)).collect(Collectors.toList());
     }
 }
