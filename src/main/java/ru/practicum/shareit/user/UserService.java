@@ -56,13 +56,12 @@ public class UserService {
     }
 
     public List<UserDto> getAllUser() {
-        return userStorage.getAllUser().stream().map(user -> MapperUser.mapToUserDto(user)).collect(Collectors.toList());
+        return userStorage.getAllUser().stream().map(MapperUser::mapToUserDto).collect(Collectors.toList());
     }
 
     private void checkExistsEmail(User user) throws DuplicateEmailDataException {
-        if (getAllUser().stream()
-                .filter(user1 -> user1.getEmail().equals(user.getEmail()) && user1.getId() != user.getId())
-                .findFirst().isPresent()) {
+        if (getAllUser().stream().anyMatch(user1 -> user1.getEmail()
+                .equals(user.getEmail()) && user1.getId() != user.getId())) {
             throw new DuplicateEmailDataException("This email already exists");
         }
     }

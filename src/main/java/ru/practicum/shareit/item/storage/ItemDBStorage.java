@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -39,8 +40,8 @@ public class ItemDBStorage implements ItemStorage {
 
     @Override
     public List<Item> getAllUserItems(Long userId) {
-        List<Item> items = itemRepository.findAll().stream().filter(item -> item.getOwner().getId() == userId).collect(Collectors.toList());
-        return items;
+        return itemRepository.findAll().stream()
+                .filter(item -> Objects.equals(item.getOwner().getId(), userId)).collect(Collectors.toList());
     }
 
     @Override

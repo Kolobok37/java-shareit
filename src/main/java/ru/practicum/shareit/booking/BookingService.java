@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,13 +35,13 @@ public class BookingService {
             throw new NotFoundException("The owner cannot book the item.");
         }
         bookingStorage.createBooking(booking);
-        BookingDto bookingDto = updateItemBooking(booking);
-        return bookingDto;
+        return updateItemBooking(booking);
     }
 
     public BookingDto getBooking(Long bookingId, Long userId) {
         Booking booking = bookingStorage.getBooking(bookingId);
-        if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
+        if (Objects.equals(booking.getBooker().getId(), userId)
+                || Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             return MapperBooking.mapToBookingDto(booking);
         }
         throw new NotFoundException("No access to booking.");
@@ -56,7 +57,7 @@ public class BookingService {
         if (userId != booking.getItem().getOwner().getId()) {
             throw new NotFoundException("No access to booking.");
         }
-        if (approved == true) {
+        if (approved) {
             booking.setStatus(Status.APPROVED);
         } else {
             booking.setStatus(Status.REJECTED);
@@ -69,23 +70,23 @@ public class BookingService {
 
     public List<BookingDto> getBookingByUser(Long userId, String state) {
         List<Booking> bookings = filterBooking(bookingStorage.getBookingsUser(userId), state).stream()
-                .peek(booking -> updateItemBooking(booking))
+                .peek(this::updateItemBooking)
                 .collect(Collectors.toList());
         ;
         if (bookings.size() == 0) {
             throw new NotFoundException("User is specified incorrectly");
         }
-        return bookings.stream().map(booking -> MapperBooking.mapToBookingDto(booking)).collect(Collectors.toList());
+        return bookings.stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
     }
 
     public List<BookingDto> getBookingByOwner(Long userId, String state) {
         List<Booking> bookings = filterBooking(bookingStorage.getBookingsOwner(userId), state).stream()
-                .peek(booking -> updateItemBooking(booking))
+                .peek(this::updateItemBooking)
                 .collect(Collectors.toList());
         if (bookings.size() == 0) {
             throw new NotFoundException("There are no bookings");
         }
-        return bookings.stream().map(booking -> MapperBooking.mapToBookingDto(booking)).collect(Collectors.toList());
+        return bookings.stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
     }
 
     private void validationBookingRequest(Booking booking) {
@@ -94,7 +95,7 @@ public class BookingService {
                 || booking.getEnd() == null || booking.getStart() == null) {
             throw new ReservationException("Date error.");
         }
-        if (booking.getItem().getAvailable() == false) {
+        if (!booking.getItem().getAvailable()) {
             throw new ReservationException("Item is already booked or in use.");
         }
     }
@@ -106,13 +107,11 @@ public class BookingService {
             Optional<Booking> lastBooking = filterBooking(bookingStorage
                     .getBookingsUser(booking.getItem().getOwner().getId()), "PAST")
                     .stream().filter(booking1 -> booking1.getItem().getId() == item.getId()).findFirst();
-            if (lastBooking.isPresent()) {
-                item.setLastBooking(lastBooking.get());
-            }
+            lastBooking.ifPresent(item::setLastBooking);
             Optional<Booking> nextBooking =
                     filterBooking(bookingStorage.getBookingsUser(booking.getItem().getOwner().getId()), "FUTURE")
                             .stream().filter(booking1 -> booking1.getItem().getId() == item.getId())
-                            .sorted((b2, b1) -> b2.getStart().compareTo(b1.getStart())).findFirst();
+                            .min((b2, b1) -> b2.getStart().compareTo(b1.getStart()));
             if (nextBooking.isPresent()) {
                 item.setNextBooking(nextBooking.get());
             } else {

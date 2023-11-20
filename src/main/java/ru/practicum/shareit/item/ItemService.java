@@ -22,6 +22,7 @@ import ru.practicum.shareit.user.storage.UserDBStorage;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class ItemService {
     public ItemDto updateItem(Long userId, Long itemId, Item item) {
         item.setId(itemId);
         User user = validationUser(userId);
-        if (itemStorage.getItem(item.getId()).getOwner().getId() != userId) {
+        if (!Objects.equals(itemStorage.getItem(item.getId()).getOwner().getId(), userId)) {
             throw new NotFoundException("User is specified incorrectly");
         }
         item.setOwner(user);
@@ -83,8 +84,8 @@ public class ItemService {
 
     public List<ItemDto> getAllUsersItem(Long userId) {
         validationUser(userId);
-        return itemStorage.getAllUserItems(userId).stream().peek(item -> updateLastNextBooking(item))
-                .map(item -> MapperItem.mapToItemDto(item)).collect(Collectors.toList());
+        return itemStorage.getAllUserItems(userId).stream().peek(this::updateLastNextBooking)
+                .map(MapperItem::mapToItemDto).collect(Collectors.toList());
     }
 
     public List<ItemDto> searchItem(String text) {
@@ -92,10 +93,10 @@ public class ItemService {
             return new ArrayList<>();
         }
         return itemStorage.getAllItems().stream()
-                .filter(item -> item.getName().toLowerCase().indexOf(text.toLowerCase()) != -1 ||
-                        item.getDescription().toLowerCase().indexOf(text.toLowerCase()) != -1)
-                .filter(item -> item.getAvailable() == true).peek(item -> updateLastNextBooking(item))
-                .peek(item -> updateLastNextBooking(item)).map(item -> MapperItem.mapToItemDto(item))
+                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||
+                        item.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .filter(Item::getAvailable).peek(this::updateLastNextBooking)
+                .peek(this::updateLastNextBooking).map(MapperItem::mapToItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -110,14 +111,16 @@ public class ItemService {
     private Item updateLastNextBooking(Item item) {
         List<Booking> bookingsNext = bookingService
                 .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), "FUTURE")
-                .stream().filter(booking -> booking.getItem().getId() == item.getId()).collect(Collectors.toList());
+                .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
+                .collect(Collectors.toList());
         if (bookingsNext.size() != 0) {
             item.setNextBooking(bookingsNext.stream().max((b1, b2) -> b2.getStart().compareTo(b1.getStart())).get());
             updateItem(item.getOwner().getId(), item.getId(), item);
         }
         List<Booking> bookingsLast = bookingService
                 .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), "PAST")
-                .stream().filter(booking -> booking.getItem().getId() == item.getId()).collect(Collectors.toList());
+                .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
+                .collect(Collectors.toList());
         if (bookingsLast.size() != 0) {
             item.setLastBooking(bookingsLast.stream().findFirst().get());
             updateItem(item.getOwner().getId(), item.getId(), item);
@@ -134,8 +137,9 @@ public class ItemService {
         Item item = getItem(itemId);
         try {
             if (bookingService.getBookingByUser(userId, "PAST").stream()
-                    .filter(bookingDto -> bookingDto.getItem().getId() == itemId)
-                    .filter(bookingDto -> bookingDto.getBooker().getId() == userId).findFirst().isEmpty()) {
+                    .filter(bookingDto -> Objects.equals(bookingDto.getItem().getId(), itemId))
+                    .filter(bookingDto -> Objects.equals(bookingDto.getBooker().getId(), userId))
+                    .findFirst().isEmpty()) {
                 throw new ValidationDataException("User don't booking this item.");
             }
         } catch (NotFoundException e) {

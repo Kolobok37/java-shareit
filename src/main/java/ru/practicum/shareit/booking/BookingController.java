@@ -43,8 +43,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public BookingDto respondingToRequest(@PathVariable Long bookingId, @RequestParam boolean approved,
                                           @RequestHeader("X-Sharer-User-Id") Long userId) {
-        BookingDto booking = bookingService.respondingToRequest(bookingId, approved, userId);
-        return booking;
+        return bookingService.respondingToRequest(bookingId, approved, userId);
     }
 
 }
