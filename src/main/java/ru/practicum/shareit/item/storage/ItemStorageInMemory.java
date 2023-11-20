@@ -14,7 +14,7 @@ public class ItemStorageInMemory implements ItemStorage {
 
     public ItemStorageInMemory(HashMap<Long, Item> itemStorage) {
         this.itemStorage = itemStorage;
-        id=(long) 1;
+        id = (long) 1;
     }
 
     @Override

@@ -84,8 +84,8 @@ public class ItemService {
 
     public List<ItemDto> getAllUsersItem(Long userId) {
         validationUser(userId);
-        return itemStorage.getAllUserItems(userId).stream().peek(item -> updateLastNextBooking(item)).
-                map(item -> MapperItem.mapToItemDto(item)).collect(Collectors.toList());
+        return itemStorage.getAllUserItems(userId).stream().peek(item -> updateLastNextBooking(item))
+                .map(item -> MapperItem.mapToItemDto(item)).collect(Collectors.toList());
     }
 
     public List<ItemDto> searchItem(String text) {
@@ -95,8 +95,8 @@ public class ItemService {
         return itemStorage.getAllItems().stream()
                 .filter(item -> item.getName().toLowerCase().indexOf(text.toLowerCase()) != -1 ||
                         item.getDescription().toLowerCase().indexOf(text.toLowerCase()) != -1)
-                .filter(item -> item.getAvailable() == true).peek(item -> updateLastNextBooking(item)).
-                peek(item -> updateLastNextBooking(item)).map(item -> MapperItem.mapToItemDto(item))
+                .filter(item -> item.getAvailable() == true).peek(item -> updateLastNextBooking(item))
+                .peek(item -> updateLastNextBooking(item)).map(item -> MapperItem.mapToItemDto(item))
                 .collect(Collectors.toList());
     }
 
