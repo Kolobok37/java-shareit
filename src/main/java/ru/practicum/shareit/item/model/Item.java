@@ -3,10 +3,11 @@ package ru.practicum.shareit.item.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
-import java.util.ArrayList;
+import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -14,21 +15,38 @@ import java.util.List;
  */
 @Data
 @AllArgsConstructor
+@Entity
+@Table(name = "items")
 public class Item {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+    @ManyToOne
     private User owner;
+    @Column(nullable = false)
+    @NotNull(message = "Name is not be null")
+    @NotEmpty(message = "Name is not be empty")
     private String name;
+    @Column(nullable = false)
+    @NotNull(message = "Description is not be null")
+    @NotEmpty(message = "Description is not be empty")
     private String description;
+    @Column(nullable = false)
+    @NotNull(message = "Available is not be null")
     private Boolean available;
-    private List<Booking> reservation;
-    private List<Reviews> reviews;
-    private ItemRequest request;
 
-    public Item(User owner, String name, String description) {
-        this.owner = owner;
-        this.name = name;
-        this.description = description;
-        reservation = new ArrayList<>();
-        reviews = new ArrayList<>();
+    @ElementCollection
+    @PrimaryKeyJoinColumn(name = "id")
+    private List<Comment> comments;
+
+    @OneToOne
+    private Booking lastBooking;
+
+    @OneToOne
+    private Booking nextBooking;
+
+    public Item() {
     }
+
 }

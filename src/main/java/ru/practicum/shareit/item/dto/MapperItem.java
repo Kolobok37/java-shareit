@@ -1,18 +1,40 @@
 package ru.practicum.shareit.item.dto;
 
+import ru.practicum.shareit.booking.dto.MapperBooking;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.dto.MapperUser;
 
 public class MapperItem {
     public static ItemDto mapToItemDto(Item item) {
-        return new ItemDto(item.getId(), MapperUser.mapToUserDto(item.getOwner()),
+        ItemDto itemDto = new ItemDto(item.getId(), item.getOwner(),
                 item.getName(), item.getDescription(), item.getAvailable(),
-                item.getReservation(), item.getReviews(), item.getRequest());
+                MapperComment.mapToCommentDto(item.getComments()), null, null);
+        if (item.getLastBooking() != null) {
+            itemDto.setLastBooking(MapperBooking.mapToBookingItemDto(item.getLastBooking()));
+        }
+        if (item.getNextBooking() != null) {
+            itemDto.setNextBooking(MapperBooking.mapToBookingItemDto(item.getNextBooking()));
+        }
+        return itemDto;
     }
 
-    public static Item mapToItem(ItemDto item) {
-        return new Item(item.getId(), MapperUser.mapToUser(item.getOwner()),
+    public static Item mapToItem(ItemDto itemDto) {
+        Item item = new Item(itemDto.getId(), itemDto.getOwner(),
+                itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable(), null,
+                null,
+                null);
+        return item;
+    }
+
+    public static ItemBookingDto mapToItemBookingDto(Item item) {
+        ItemBookingDto itemBookingDtoDto = new ItemBookingDto(item.getId(), item.getOwner(),
                 item.getName(), item.getDescription(), item.getAvailable(),
-                item.getReservation(), item.getReviews(), item.getRequest());
+                MapperComment.mapToCommentDto(item.getComments()), null, null);
+        if (item.getLastBooking() != null) {
+            itemBookingDtoDto.setLastBookingId(item.getLastBooking().getId());
+        }
+        if (item.getNextBooking() != null) {
+            itemBookingDtoDto.setNextBookingId(item.getNextBooking().getId());
+        }
+        return itemBookingDtoDto;
     }
 }

@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class ItemStorageInMemory implements ItemStorage {
-    private HashMap<Integer, Item> itemStorage;
-    private int id;
+    private HashMap<Long, Item> itemStorage;
+    private Long id;
 
-    public ItemStorageInMemory(HashMap<Integer, Item> itemStorage) {
+    public ItemStorageInMemory(HashMap<Long, Item> itemStorage) {
         this.itemStorage = itemStorage;
-        id = 1;
+        id=(long) 1;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public Item getItem(int itemId) {
+    public Item getItem(Long itemId) {
         return itemStorage.get(itemId);
     }
 
@@ -35,7 +35,7 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public List<Item> getAllUserItems(int userId) {
+    public List<Item> getAllUserItems(Long userId) {
         return itemStorage.values().stream()
                 .filter(item -> item.getOwner().getId() == userId)
                 .collect(Collectors.toList());

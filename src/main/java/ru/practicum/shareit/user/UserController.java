@@ -17,7 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{userId}")
-    public UserDto getUser(@PathVariable int userId) {
+    public UserDto getUser(@PathVariable Long userId) {
         return userService.getUser(userId);
     }
 
@@ -28,18 +28,18 @@ public class UserController {
     }
 
     @PostMapping(consumes = {"application/json"})
-    public UserDto createUser(@Valid @RequestBody UserDto user) {
+    public UserDto createUser(@Valid @RequestBody User user) {
         return userService.createUser(user);
     }
 
     @PatchMapping(value = "/{userId}", consumes = {"application/json"})
-    public UserDto updateUser(@RequestBody User user, @PathVariable int userId) {
+    public UserDto updateUser(@Valid @RequestBody User user, @PathVariable Long userId) {
         user.setId(userId);
         return userService.updateUser(user);
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable int userId) {
+    public void deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
     }
 }
