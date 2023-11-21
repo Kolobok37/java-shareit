@@ -47,12 +47,11 @@ public class BookingController {
         return bookingService.respondingToRequest(bookingId, approved, userId);
     }
 
-    private State toStateEnum(String state){
+    private State toStateEnum(String state) {
         try {
             State stateEnum = State.valueOf(state);
             return stateEnum;
-        }
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             throw new StatusBookingException(String.format("Unknown state: %s", state));
         }
     }

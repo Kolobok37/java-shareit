@@ -31,8 +31,7 @@ public class UserService {
         }
         try {
             user = userStorage.createUser(user);
-        }
-        catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailDataException("This email already exists");
         }
         return MapperUser.mapToUserDto(user);
