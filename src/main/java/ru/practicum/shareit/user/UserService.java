@@ -10,7 +10,6 @@ import ru.practicum.shareit.user.dto.MapperUser;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.UserStorage;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
