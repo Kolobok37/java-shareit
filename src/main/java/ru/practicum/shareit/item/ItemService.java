@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingService;
+import ru.practicum.shareit.booking.State;
 import ru.practicum.shareit.booking.Storage.BookingDBStorage;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationDataException;
@@ -111,7 +112,7 @@ public class ItemService {
 
     private Item updateLastNextBooking(Item item) {
         List<Booking> bookingsNext = bookingService
-                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), "FUTURE")
+                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), State.FUTURE)
                 .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
                 .collect(Collectors.toList());
         if (bookingsNext.size() != 0) {
@@ -119,7 +120,7 @@ public class ItemService {
             updateItem(item.getOwner().getId(), item.getId(), item);
         }
         List<Booking> bookingsLast = bookingService
-                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), "PAST")
+                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), State.PAST)
                 .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
                 .collect(Collectors.toList());
         if (bookingsLast.size() != 0) {
@@ -137,7 +138,7 @@ public class ItemService {
     public CommentDto createComment(Long userId, Long itemId, Comment comment) {
         Item item = getItem(itemId);
         try {
-            if (bookingService.getBookingByUser(userId, "PAST").stream()
+            if (bookingService.getBookingByUser(userId, State.PAST).stream()
                     .filter(bookingDto -> Objects.equals(bookingDto.getItem().getId(), itemId))
                     .filter(bookingDto -> Objects.equals(bookingDto.getBooker().getId(), userId))
                     .findFirst().isEmpty()) {

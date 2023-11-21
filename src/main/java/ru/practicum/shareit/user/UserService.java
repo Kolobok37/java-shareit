@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.DuplicateEmailDataException;
 import ru.practicum.shareit.exception.ValidationDataException;
@@ -9,6 +10,7 @@ import ru.practicum.shareit.user.dto.MapperUser;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.UserStorage;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,14 +29,13 @@ public class UserService {
         if (user.getName() == null) {
             throw new ValidationDataException("Email can't be empty.");
         }
-        User newUser = userStorage.createUser(user);
         try {
-            checkExistsEmail(newUser);
-        } catch (DuplicateEmailDataException e) {
-            userStorage.deleteUser(newUser.getId());
+            user = userStorage.createUser(user);
+        }
+        catch (DataIntegrityViolationException e){
             throw new DuplicateEmailDataException("This email already exists");
         }
-        return MapperUser.mapToUserDto(userStorage.createUser(user));
+        return MapperUser.mapToUserDto(user);
     }
 
     public UserDto getUser(Long userId) {

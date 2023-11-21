@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingInDto;
+import ru.practicum.shareit.exception.StatusBookingException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -31,13 +32,13 @@ public class BookingController {
     @GetMapping()
     public List<BookingDto> getBookingByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
                                              @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getBookingByUser(userId, state);
+        return bookingService.getBookingByUser(userId, toStateEnum(state));
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
                                               @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getBookingByOwner(userId, state);
+        return bookingService.getBookingByOwner(userId, toStateEnum(state));
     }
 
     @PatchMapping("/{bookingId}")
@@ -46,4 +47,13 @@ public class BookingController {
         return bookingService.respondingToRequest(bookingId, approved, userId);
     }
 
+    private State toStateEnum(String state){
+        try {
+            State stateEnum = State.valueOf(state);
+            return stateEnum;
+        }
+        catch (IllegalArgumentException e){
+            throw new StatusBookingException(String.format("Unknown state: %s", state));
+        }
+    }
 }

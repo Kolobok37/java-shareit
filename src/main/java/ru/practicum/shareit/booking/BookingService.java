@@ -69,18 +69,17 @@ public class BookingService {
         return MapperBooking.mapToBookingDto(booking);
     }
 
-    public List<BookingDto> getBookingByUser(Long userId, String state) {
-        List<Booking> bookings = filterBooking(bookingStorage.getBookingsUser(userId), state).stream()
+    public List<BookingDto> getBookingByUser(Long userId, State state) {
+        List<Booking> bookings = filterBooking(bookingStorage.getBookingsUser(userId).stream()
                 .peek(this::updateItemBooking)
-                .collect(Collectors.toList());
-        ;
+                .collect(Collectors.toList()),state);
         if (bookings.size() == 0) {
             throw new NotFoundException("User is specified incorrectly");
         }
         return bookings.stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
     }
 
-    public List<BookingDto> getBookingByOwner(Long userId, String state) {
+    public List<BookingDto> getBookingByOwner(Long userId, State state) {
         List<Booking> bookings = filterBooking(bookingStorage.getBookingsOwner(userId), state).stream()
                 .peek(this::updateItemBooking)
                 .collect(Collectors.toList());
@@ -106,11 +105,11 @@ public class BookingService {
         if (item.getNextBooking() != null && (item.getNextBooking().getStart().isBefore(LocalDateTime.now())
                 || item.getNextBooking().getStatus().equals(Status.REJECTED))) {
             Optional<Booking> lastBooking = filterBooking(bookingStorage
-                    .getBookingsUser(booking.getItem().getOwner().getId()), "PAST")
+                    .getBookingsUser(booking.getItem().getOwner().getId()), State.PAST)
                     .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId())).findFirst();
             lastBooking.ifPresent(item::setLastBooking);
             Optional<Booking> nextBooking =
-                    filterBooking(bookingStorage.getBookingsUser(booking.getItem().getOwner().getId()), "FUTURE")
+                    filterBooking(bookingStorage.getBookingsUser(booking.getItem().getOwner().getId()), State.FUTURE)
                             .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId()))
                             .min(Comparator.comparing(Booking::getStart));
             if (nextBooking.isPresent()) {
@@ -134,31 +133,31 @@ public class BookingService {
         return MapperBooking.mapToBookingDto(booking);
     }
 
-    public List<Booking> filterBooking(List<Booking> bookings, String state) {
+    public List<Booking> filterBooking(List<Booking> bookings, State state) {
         switch (state) {
-            case "ALL":
+            case ALL:
                 return bookings.stream().sorted((b1, b2) -> b2.getStart().compareTo(b1.getStart()))
                         .collect(Collectors.toList());
-            case "CURRENT":
+            case CURRENT:
                 return bookings.stream()
                         .filter(booking -> booking.getStart().isBefore(LocalDateTime.now())
                                 && booking.getEnd().isAfter(LocalDateTime.now()))
                         .sorted((b1, b2) -> b2.getStart().compareTo(b1.getStart()))
                         .collect(Collectors.toList());
-            case "WAITING":
+            case WAITING:
                 return bookings.stream().filter(booking -> booking.getStatus() == Status.WAITING)
                         .sorted((b1, b2) -> b2.getStart().compareTo(b1.getStart()))
                         .collect(Collectors.toList());
-            case "REJECTED":
+            case REJECTED:
                 return bookings.stream().filter(booking -> booking.getStatus() == Status.REJECTED)
                         .sorted((b1, b2) -> b2.getStart().compareTo(b1.getStart()))
                         .collect(Collectors.toList());
-            case "PAST":
+            case PAST:
                 return bookings.stream().filter(booking -> booking.getStatus().equals(Status.APPROVED))
                         .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
                         .sorted((b1, b2) -> b2.getStart().compareTo(b1.getStart()))
                         .collect(Collectors.toList());
-            case "FUTURE":
+            case FUTURE:
                 return bookings.stream().filter(booking -> booking.getStatus().equals(Status.APPROVED)
                                 || booking.getStatus().equals(Status.WAITING))
                         .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
