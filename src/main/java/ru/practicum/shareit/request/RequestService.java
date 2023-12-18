@@ -42,9 +42,7 @@ public class RequestService {
     }
 
     public List<RequestDto> getAllRequest(Long userId, Long from, Optional<Long> size) {
-
         List<Request> requests = paging(from, size, requestStorage.getAllRequests());
-
         return requests.stream().filter(r -> r.getUser().getId() != userId).map(r -> MapperRequest.mapToRequestDto(r))
                 .collect(Collectors.toList());
     }
