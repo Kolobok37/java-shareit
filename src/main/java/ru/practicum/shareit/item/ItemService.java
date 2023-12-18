@@ -61,11 +61,11 @@ public class ItemService {
     public ItemDto createItem(Long userId, Item item) {
         User user = userStorage.getUser(userId);
         item.setOwner(user);
-        if(item.getRequestId()!=null) {
+        if (item.getRequestId() != null) {
             Request request = requestStorage.getRequest(item.getRequestId())
                     .orElseThrow(() -> new NotFoundException("Request is not found."));
             Item newItem = itemStorage.createItem(item);
-            List<Item> items= request.getItems();
+            List<Item> items = request.getItems();
             items.add(newItem);
             request.setItems(items);
             requestStorage.createRequest(request);
@@ -92,17 +92,17 @@ public class ItemService {
         return MapperItem.mapToItemDto(itemStorage.updateItem(oldItem));
     }
 
-    public List<ItemDto> getAllUsersItem(Long from, Optional<Long> size,Long userId) {
+    public List<ItemDto> getAllUsersItem(Long from, Optional<Long> size, Long userId) {
         userStorage.getUser(userId);
-        return paging(from,size,itemStorage.getAllUserItems(userId)).stream().peek(this::updateLastNextBooking)
+        return paging(from, size, itemStorage.getAllUserItems(userId)).stream().peek(this::updateLastNextBooking)
                 .map(MapperItem::mapToItemDto).collect(Collectors.toList());
     }
 
-    public List<ItemDto> searchItem(Long from, Optional<Long> size,String text) {
+    public List<ItemDto> searchItem(Long from, Optional<Long> size, String text) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return paging(from,size,itemStorage.getSearchItem(text)).stream()
+        return paging(from, size, itemStorage.getSearchItem(text)).stream()
                 .filter(Item::getAvailable)
                 .peek(this::updateLastNextBooking)
                 .map(MapperItem::mapToItemDto)
@@ -112,7 +112,7 @@ public class ItemService {
     public CommentDto createComment(Long userId, Long itemId, Comment comment) {
         Item item = getItem(itemId);
         try {
-            if (bookingService.getBookingByUser(Long.valueOf(0),Optional.empty(),userId, State.PAST).stream()
+            if (bookingService.getBookingByUser(Long.valueOf(0), Optional.empty(), userId, State.PAST).stream()
                     .filter(bookingDto -> Objects.equals(bookingDto.getItem().getId(), itemId))
                     .findFirst().isEmpty()) {
                 throw new ValidationDataException("User don't booking this item.");
@@ -153,14 +153,14 @@ public class ItemService {
         return itemStorage.getItem(itemId);
     }
 
-    private List<Item> paging(Long from, Optional<Long> size,List<Item> requests){
-        if(from<0||size.isPresent()&&size.get()<1){
-            throw  new ValidationDataException("Date is not valid.");
+    private List<Item> paging(Long from, Optional<Long> size, List<Item> requests) {
+        if (from < 0 || size.isPresent() && size.get() < 1) {
+            throw new ValidationDataException("Date is not valid.");
         }
-        requests=requests.stream()
+        requests = requests.stream()
                 .skip(from).collect(Collectors.toList());
-        if(size.isPresent()){
-            requests=requests.stream().limit(size.get()).collect(Collectors.toList());
+        if (size.isPresent()) {
+            requests = requests.stream().limit(size.get()).collect(Collectors.toList());
         }
         return requests;
     }
