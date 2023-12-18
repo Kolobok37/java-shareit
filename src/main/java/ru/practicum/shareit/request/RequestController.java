@@ -13,22 +13,24 @@ import java.util.Optional;
 public class RequestController {
     @Autowired()
     RequestService requestService;
+
     @GetMapping()
-    public List<RequestDto> getRequestsByUser(@RequestHeader("X-Sharer-User-Id") Long userId){
+    public List<RequestDto> getRequestsByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return requestService.getRequests(userId);
     }
 
     @GetMapping("/{requestId}")
-    public RequestDto getRequest(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long requestId){
+    public RequestDto getRequest(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long requestId) {
         return requestService.getRequest(requestId, userId);
     }
 
     @GetMapping("/all")
-    public List<RequestDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId,@RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size){
-        return requestService.getAllRequest(userId,from,size);
+    public List<RequestDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size) {
+        return requestService.getAllRequest(userId, from, size);
     }
+
     @PostMapping()
-    public RequestDto createRequest(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody Request request){
-        return requestService.createRequest(userId,request);
+    public RequestDto createRequest(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody Request request) {
+        return requestService.createRequest(userId, request);
     }
 }

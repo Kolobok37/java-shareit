@@ -12,7 +12,6 @@ import ru.practicum.shareit.exception.StatusBookingException;
 import ru.practicum.shareit.exception.ValidationDataException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
-import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.time.LocalDateTime;

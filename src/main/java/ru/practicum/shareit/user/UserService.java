@@ -6,13 +6,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.DuplicateEmailDataException;
-import ru.practicum.shareit.exception.ValidationDataException;
 import ru.practicum.shareit.user.dto.MapperUser;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Setter
@@ -36,16 +34,15 @@ public class UserService {
     }
 
     public UserDto updateUser(User user) {
-        if (user.getEmail()==null||user.getEmail().isBlank()) {
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
             user.setEmail(userStorage.getUser(user.getId()).getEmail());
         }
-        if (user.getName()==null||user.getName().isBlank()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(userStorage.getUser(user.getId()).getName());
         }
         try {
             return MapperUser.mapToUserDto(userStorage.createUser(user));
-        }
-        catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailDataException("This email already exists");
         }
     }

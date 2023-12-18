@@ -6,11 +6,7 @@ import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @Entity
 @AllArgsConstructor
@@ -31,10 +27,5 @@ public class User {
     private String email;
 
     public User() {
-    }
-
-    @Override
-    public String toString() {
-        return id + " " + name + " " + email;
     }
 }

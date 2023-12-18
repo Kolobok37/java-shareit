@@ -47,8 +47,8 @@ public class ItemDBStorage implements ItemStorage {
     }
 
     public List<Item> getSearchItem(String text) {
-        Set<Item> n= itemRepository.findByNameContainingIgnoreCase(text).stream().collect(Collectors.toSet());
-        Set<Item> d =itemRepository.findByDescriptionContainingIgnoreCase(text).stream().collect(Collectors.toSet());
+        Set<Item> n = itemRepository.findByNameContainingIgnoreCase(text).stream().collect(Collectors.toSet());
+        Set<Item> d = itemRepository.findByDescriptionContainingIgnoreCase(text).stream().collect(Collectors.toSet());
         Set<Item> a = new HashSet<>();
         a.addAll(n);
         a.addAll(d);

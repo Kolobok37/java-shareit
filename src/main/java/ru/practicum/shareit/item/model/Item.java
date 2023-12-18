@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -24,7 +23,7 @@ public class Item {
     @Column(name = "item_id")
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "owner_id",nullable = false)
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
     @Column(nullable = false)
     @NotNull(message = "Name is not be null")
@@ -52,6 +51,7 @@ public class Item {
 
     @Column(name = "request_id")
     private Long requestId;
+
     public Item() {
     }
 
