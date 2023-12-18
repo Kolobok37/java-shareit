@@ -15,6 +15,12 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handle(final ValidationDataException e) {
+        return Map.of("error: ", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handle(final MethodArgumentNotValidException e) {
         return Map.of("error: ", e.getBindingResult()
                 .getFieldErrors()
@@ -24,8 +30,15 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handle(final ValidationException e) {
+    public Map<String, String> handle(final ReservationException e) {
         return Map.of("error: ", e.getMessage());
+    }
+
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handle(final StatusBookingException e) {
+        return Map.of("error", e.getMessage());
     }
 
     @ExceptionHandler
@@ -36,10 +49,9 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handle(final DuplicateEmailException e) {
+    public Map<String, String> handle(final DuplicateEmailDataException e) {
         return Map.of("error: ", e.getMessage());
     }
-
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

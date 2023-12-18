@@ -3,18 +3,20 @@ package ru.practicum.shareit.item.storage;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.model.Item;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
 public class ItemStorageInMemory implements ItemStorage {
-    private HashMap<Integer, Item> itemStorage;
-    private int id;
+    private HashMap<Long, Item> itemStorage;
+    private Long id;
 
-    public ItemStorageInMemory(HashMap<Integer, Item> itemStorage) {
+    public ItemStorageInMemory(HashMap<Long, Item> itemStorage) {
         this.itemStorage = itemStorage;
-        id = 1;
+        id = (long) 1;
     }
 
     @Override
@@ -24,7 +26,7 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public Item getItem(int itemId) {
+    public Item getItem(Long itemId) {
         return itemStorage.get(itemId);
     }
 
@@ -35,14 +37,14 @@ public class ItemStorageInMemory implements ItemStorage {
     }
 
     @Override
-    public List<Item> getAllUserItems(int userId) {
+    public List<Item> getAllUserItems(Long userId) {
         return itemStorage.values().stream()
-                .filter(item -> item.getOwner().getId() == userId)
+                .filter(item -> Objects.equals(item.getOwner().getId(), userId))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<Item> getAllItems() {
-        return itemStorage.values().stream().collect(Collectors.toList());
+        return new ArrayList<>(itemStorage.values());
     }
 }
