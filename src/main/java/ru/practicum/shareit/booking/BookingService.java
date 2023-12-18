@@ -9,8 +9,10 @@ import ru.practicum.shareit.booking.dto.MapperBooking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ReservationException;
 import ru.practicum.shareit.exception.StatusBookingException;
+import ru.practicum.shareit.exception.ValidationDataException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.time.LocalDateTime;
@@ -69,36 +71,26 @@ public class BookingService {
         return MapperBooking.mapToBookingDto(booking);
     }
 
-    public List<BookingDto> getBookingByUser(Long userId, State state) {
+    public List<BookingDto> getBookingByUser(Long from, Optional<Long> size, Long userId, State state) {
         List<Booking> bookings = filterBooking(bookingStorage.getBookingsUser(userId).stream()
                 .peek(this::updateItemBooking)
-                .collect(Collectors.toList()),state);
+                .collect(Collectors.toList()), state);
         if (bookings.size() == 0) {
             throw new NotFoundException("User is specified incorrectly");
         }
-        return bookings.stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
+        return paging(from, size, bookings).stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
     }
 
-    public List<BookingDto> getBookingByOwner(Long userId, State state) {
+    public List<BookingDto> getBookingByOwner(Long from, Optional<Long> size, Long userId, State state) {
         List<Booking> bookings = filterBooking(bookingStorage.getBookingsOwner(userId), state).stream()
                 .peek(this::updateItemBooking)
                 .collect(Collectors.toList());
         if (bookings.size() == 0) {
             throw new NotFoundException("There are no bookings");
         }
-        return bookings.stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
+        return paging(from, size, bookings).stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
     }
 
-    private void validationBookingRequest(Booking booking) {
-        if (booking.getEnd().isBefore(LocalDateTime.now()) || booking.getStart().isBefore(LocalDateTime.now())
-                || booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())
-                || booking.getEnd() == null || booking.getStart() == null) {
-            throw new ReservationException("Date error.");
-        }
-        if (!booking.getItem().getAvailable()) {
-            throw new ReservationException("Item is already booked or in use.");
-        }
-    }
 
     public BookingDto updateItemBooking(Booking booking) {
         Item item = booking.getItem();
@@ -166,6 +158,29 @@ public class BookingService {
             default:
                 throw new StatusBookingException(String.format("Unknown state: %s", state));
         }
+    }
+
+    private void validationBookingRequest(Booking booking) {
+        if (booking.getEnd().isBefore(LocalDateTime.now()) || booking.getStart().isBefore(LocalDateTime.now())
+                || booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())
+                || booking.getEnd() == null || booking.getStart() == null) {
+            throw new ReservationException("Date error.");
+        }
+        if (!booking.getItem().getAvailable()) {
+            throw new ReservationException("Item is already booked or in use.");
+        }
+    }
+
+    private List<Booking> paging(Long from, Optional<Long> size, List<Booking> requests) {
+        if (from < 0 || size.isPresent() && size.get() < 1) {
+            throw new ValidationDataException("Date is not valid.");
+        }
+        requests = requests.stream().sorted((r1, r2) -> r2.getStart().compareTo(r1.getStart()))
+                .skip(from).collect(Collectors.toList());
+        if (size.isPresent()) {
+            requests.stream().limit(size.get());
+        }
+        return requests;
     }
 }
 

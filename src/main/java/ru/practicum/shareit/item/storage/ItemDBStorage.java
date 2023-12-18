@@ -7,9 +7,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.storage.UserRepository;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -30,7 +28,7 @@ public class ItemDBStorage implements ItemStorage {
         if (item.isEmpty()) {
             throw new NotFoundException("Item not found.");
         }
-        return itemRepository.findById(itemId).get();
+        return item.get();
     }
 
     @Override
@@ -40,12 +38,20 @@ public class ItemDBStorage implements ItemStorage {
 
     @Override
     public List<Item> getAllUserItems(Long userId) {
-        return itemRepository.findAll().stream()
-                .filter(item -> Objects.equals(item.getOwner().getId(), userId)).collect(Collectors.toList());
+        return itemRepository.findByOwnerId(userId);
     }
 
     @Override
     public List<Item> getAllItems() {
         return itemRepository.findAll();
+    }
+
+    public List<Item> getSearchItem(String text) {
+        Set<Item> n= itemRepository.findByNameContainingIgnoreCase(text).stream().collect(Collectors.toSet());
+        Set<Item> d =itemRepository.findByDescriptionContainingIgnoreCase(text).stream().collect(Collectors.toSet());
+        Set<Item> a = new HashSet<>();
+        a.addAll(n);
+        a.addAll(d);
+        return a.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
     }
 }

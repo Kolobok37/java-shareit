@@ -11,12 +11,12 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class BookingInDto {
-    private long id;
+    private Long id;
     @NotNull(message = "Not be null.")
     private LocalDateTime start;
     @NotNull(message = "Not be null.")
     private LocalDateTime end;
-    private long itemId;
+    private Long itemId;
 
     private UserDto bookerId;
     private Status status;

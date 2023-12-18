@@ -8,6 +8,7 @@ import ru.practicum.shareit.exception.StatusBookingException;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * TODO Sprint add-bookings.
@@ -31,14 +32,14 @@ public class BookingController {
 
     @GetMapping()
     public List<BookingDto> getBookingByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                             @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getBookingByUser(userId, toStateEnum(state));
+                                             @RequestParam(defaultValue = "ALL") String state,@RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size) {
+        return bookingService.getBookingByUser(from,size,userId, toStateEnum(state));
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                              @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getBookingByOwner(userId, toStateEnum(state));
+                                              @RequestParam(defaultValue = "ALL") String state,@RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size) {
+        return bookingService.getBookingByOwner(from,size,userId, toStateEnum(state));
     }
 
     @PatchMapping("/{bookingId}")
