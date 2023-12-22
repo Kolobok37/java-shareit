@@ -1,6 +1,8 @@
 package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,7 +25,7 @@ public class RequestStorage {
         return requestRepository.findByUserId(userId);
     }
 
-    public List<Request> getAllRequests() {
-        return requestRepository.findAll();
+    public Page<Request> getAllRequests(Pageable pageable) {
+        return requestRepository.findAll(pageable);
     }
 }

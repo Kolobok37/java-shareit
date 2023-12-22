@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.Storage.BookingDBStorage;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingInDto;
@@ -275,10 +276,10 @@ class BookingServiceTest {
                 item, user2, Status.APPROVED);
 
 
-        when(bookingDBStorage.getBookingsUser(Mockito.anyLong()))
-                .thenReturn(new ArrayList<>(List.of(booking2,booking)));
+        when(bookingDBStorage.getBookingsUserAll(anyLong(),any(Pageable.class)))
+                .thenReturn(new ArrayList<>(List.of(booking,booking2)));
 
-        List<BookingDto> bookingsDto = mockBookingService.getBookingByUser(0L, Optional.empty(),2L,State.ALL);
+        List<BookingDto> bookingsDto = mockBookingService.getBookingByUser(0, Optional.empty(),2L,State.ALL);
 
         assertEquals(MapperBooking.mapToBookingDto(booking), bookingsDto.get(0));
         assertEquals(MapperBooking.mapToBookingDto(booking2), bookingsDto.get(1));
@@ -293,11 +294,11 @@ class BookingServiceTest {
                 "itemIsGood", true, new ArrayList<>(), null, null, 1L);
 
 
-        when(bookingDBStorage.getBookingsUser(Mockito.anyLong()))
+        when(bookingDBStorage.getBookingsUserAll(anyLong(),any(Pageable.class)))
                 .thenReturn(new ArrayList<>());
 
         assertThrows(NotFoundException.class, () ->
-                mockBookingService.getBookingByUser(0L, Optional.empty(),2L,State.ALL),
+                mockBookingService.getBookingByUser(0, Optional.empty(),2L,State.ALL),
                 "User is specified incorrectly");
     }
 
@@ -314,10 +315,10 @@ class BookingServiceTest {
                 item, user2, Status.APPROVED);
 
 
-        when(bookingDBStorage.getBookingsOwner(Mockito.anyLong()))
-                .thenReturn(new ArrayList<>(List.of(booking2,booking)));
+        when(bookingDBStorage.getBookingsOwnerItemAll(Mockito.anyLong(),any()))
+                .thenReturn(new ArrayList<>(List.of(booking,booking2)));
 
-        List<BookingDto> bookingsDto = mockBookingService.getBookingByOwner(0L, Optional.empty(),2L,State.ALL);
+        List<BookingDto> bookingsDto = mockBookingService.getBookingByOwnerItem(0, Optional.empty(),2L,State.ALL);
 
         assertEquals(MapperBooking.mapToBookingDto(booking), bookingsDto.get(0));
         assertEquals(MapperBooking.mapToBookingDto(booking2), bookingsDto.get(1));
@@ -332,11 +333,11 @@ class BookingServiceTest {
                 "itemIsGood", true, new ArrayList<>(), null, null, 1L);
 
 
-        when(bookingDBStorage.getBookingsOwner(Mockito.anyLong()))
+        when(bookingDBStorage.getBookingsOwnerItemAll(Mockito.anyLong(),any()))
                 .thenReturn(new ArrayList<>());
 
         assertThrows(NotFoundException.class, () ->
-                        mockBookingService.getBookingByOwner(0L, Optional.empty(),2L,State.ALL),
+                        mockBookingService.getBookingByOwnerItem(0, Optional.empty(),2L,State.ALL),
                 "There are no bookings");
     }
 

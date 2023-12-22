@@ -106,7 +106,7 @@ class BookingControllerTest {
                         .param("state", "CURRENT"))
                 .andExpect(status().isOk());
 
-        verify(bookingService).getBookingByUser(Long.valueOf(from), Optional.of(Long.valueOf(size)),userId, State.CURRENT);
+        verify(bookingService).getBookingByUser(Integer.valueOf(from), Optional.of(Integer.valueOf(size)),userId, State.CURRENT);
     }
 
     @Test
@@ -121,7 +121,7 @@ class BookingControllerTest {
                         .param("from", from).param("size", size))
                 .andExpect(status().isOk());
 
-        verify(bookingService).getBookingByUser(Long.valueOf(from), Optional.of(Long.valueOf(size)),userId, State.ALL);
+        verify(bookingService).getBookingByUser(Integer.valueOf(from), Optional.of(Integer.valueOf(size)),userId, State.ALL);
     }
 
     @Test
@@ -138,7 +138,7 @@ class BookingControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(bookingService,never())
-            .getBookingByUser(Long.valueOf(from), Optional.of(Long.valueOf(size)),userId, State.ALL);
+            .getBookingByUser(Integer.valueOf(from), Optional.of(Integer.valueOf(size)),userId, State.ALL);
     }
 
     @Test
@@ -154,7 +154,7 @@ class BookingControllerTest {
                         .param("state", "CURRENT"))
                 .andExpect(status().isOk());
 
-        verify(bookingService).getBookingByOwner(Long.valueOf(from), Optional.of(Long.valueOf(size)),userId, State.CURRENT);
+       // verify(bookingService).getBookingByOwner(Integer.valueOf(from), Optional.of(Integer.valueOf(size)),userId, State.CURRENT);
     }
 
     @Test

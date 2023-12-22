@@ -2,7 +2,9 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Paging;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.State;
@@ -92,17 +94,17 @@ public class ItemService {
         return MapperItem.mapToItemDto(itemStorage.updateItem(oldItem));
     }
 
-    public List<ItemDto> getAllUsersItem(Long from, Optional<Long> size, Long userId) {
+    public List<ItemDto> getAllUsersItem(Integer from, Optional<Integer> size, Long userId) {
         userStorage.getUser(userId);
-        return paging(from, size, itemStorage.getAllUserItems(userId)).stream().peek(this::updateLastNextBooking)
+        return itemStorage.getAllUserItems(userId, Paging.paging(from, size)).stream().peek(this::updateLastNextBooking)
                 .map(MapperItem::mapToItemDto).collect(Collectors.toList());
     }
 
-    public List<ItemDto> searchItem(Long from, Optional<Long> size, String text) {
+    public List<ItemDto> searchItem(Integer from, Optional<Integer> size, String text) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return paging(from, size, itemStorage.getSearchItem(text)).stream()
+        return itemStorage.getSearchItem(text, Paging.paging(from, size)).stream()
                 .filter(Item::getAvailable)
                 .peek(this::updateLastNextBooking)
                 .map(MapperItem::mapToItemDto)
@@ -112,7 +114,7 @@ public class ItemService {
     public CommentDto createComment(Long userId, Long itemId, Comment comment) {
         Item item = getItem(itemId);
         try {
-            if (bookingService.getBookingByUser(Long.valueOf(0), Optional.empty(), userId, State.PAST).stream()
+            if (bookingService.getBookingByUser(Integer.valueOf(0), Optional.empty(), userId, State.PAST).stream()
                     .filter(bookingDto -> Objects.equals(bookingDto.getItem().getId(), itemId))
                     .findFirst().isEmpty()) {
                 throw new ValidationDataException("User don't booking this item.");
@@ -130,16 +132,16 @@ public class ItemService {
     }
 
     private Item updateLastNextBooking(Item item) {
-        List<Booking> bookingsNext = bookingService
-                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), State.FUTURE)
+        List<Booking> bookingsNext = bookingDBStorage
+                .getBookingsOwnerItemByTime(item.getOwner().getId(), State.FUTURE, Pageable.unpaged())
                 .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
                 .collect(Collectors.toList());
         if (bookingsNext.size() != 0) {
             item.setNextBooking(bookingsNext.stream().max((b1, b2) -> b2.getStart().compareTo(b1.getStart())).get());
             updateItem(item.getOwner().getId(), item.getId(), item);
         }
-        List<Booking> bookingsLast = bookingService
-                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), State.PAST)
+        List<Booking> bookingsLast = bookingDBStorage
+                .getBookingsOwnerItemByTime(item.getOwner().getId(), State.PAST, Pageable.unpaged())
                 .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
                 .collect(Collectors.toList());
         if (bookingsLast.size() != 0) {

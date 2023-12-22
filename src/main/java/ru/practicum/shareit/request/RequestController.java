@@ -25,7 +25,7 @@ public class RequestController {
     }
 
     @GetMapping("/all")
-    public List<RequestDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size) {
+    public List<RequestDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(defaultValue = "0") Integer from, @RequestParam Optional<Integer> size) {
         return requestService.getAllRequest(userId, from, size);
     }
 

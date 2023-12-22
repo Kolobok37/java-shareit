@@ -66,7 +66,7 @@ class RequestControllerTest {
                         .param("from", from).param("size", size))
                 .andExpect(status().isOk());
 
-        verify(requestService).getAllRequest(userId, Long.valueOf(from), Optional.of(Long.valueOf(size)));
+        verify(requestService).getAllRequest(userId, Integer.valueOf(from), Optional.of(Integer.valueOf(size)));
     }
 
     @Test

@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.request.dto.MapperRequest;
 import ru.practicum.shareit.request.dto.RequestDto;
@@ -110,11 +111,11 @@ class RequestServiceTest {
         Request request3 = new Request(null, "request",
                 LocalDateTime.of(2000, 1, 1, 1, 1), user2, new ArrayList<>());
 
-        List<Request> requestList = new ArrayList<>(List.of(request, request2, request3));
+        Page<Request> requestList = new PageImpl(List.of(request, request2, request3));
 
-        when(requestStorage.getAllRequests()).thenReturn(requestList);
+        when(requestStorage.getAllRequests(any())).thenReturn(requestList);
 
-        List<RequestDto> requestDto = mockRequestService.getAllRequest(2L, 0L, Optional.empty());
+        List<RequestDto> requestDto = mockRequestService.getAllRequest(2L, 0, Optional.empty());
 
         assertTrue(requestDto.size() == 2);
         assertEquals(MapperRequest.mapToRequestDto(request), requestDto.get(0));

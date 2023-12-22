@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.storage;
 
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -11,8 +12,7 @@ public interface ItemStorage {
 
     Item updateItem(Item item);
 
-    List<Item> getAllUserItems(Long userId);
+    List<Item> getAllUserItems(Long userId, Pageable pageable);
 
-    List<Item> getAllItems();
-
+    List<Item> getAllItems(Pageable pageable);
 }

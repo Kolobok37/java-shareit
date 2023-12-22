@@ -1,7 +1,9 @@
 package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Paging;
 import ru.practicum.shareit.booking.Storage.BookingDBStorage;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingInDto;
@@ -15,10 +17,7 @@ import ru.practicum.shareit.item.storage.ItemStorage;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,24 +69,70 @@ public class BookingService {
         return MapperBooking.mapToBookingDto(booking);
     }
 
-    public List<BookingDto> getBookingByUser(Long from, Optional<Long> size, Long userId, State state) {
-        List<Booking> bookings = filterBooking(bookingStorage.getBookingsUser(userId).stream()
-                .peek(this::updateItemBooking)
-                .collect(Collectors.toList()), state);
+    public List<BookingDto> getBookingByUser(Integer from, Optional<Integer> size, Long userId, State state) {
+        List<BookingDto> bookings = new ArrayList<>();
+        switch (state) {
+            case APPROVED:
+            case REJECTED:
+            case CANCELED:
+            case WAITING:
+                bookings = bookingStorage
+                        .getBookingsUserByStatus(userId, state, Paging.paging(from, size)).stream()
+                        .peek(this::updateItemBooking)
+                        .map(MapperBooking::mapToBookingDto)
+                        .collect(Collectors.toList());
+                break;
+            case PAST:
+            case FUTURE:
+            case CURRENT:
+                bookings = bookingStorage
+                        .getBookingsUserByTime(userId, state, Paging.paging(from, size)).stream()
+                        .peek(this::updateItemBooking)
+                        .map(MapperBooking::mapToBookingDto)
+                        .collect(Collectors.toList());
+                break;
+            case ALL:
+                bookings = bookingStorage
+                        .getBookingsUserAll(userId, Paging.paging(from, size)).stream()
+                        .peek(this::updateItemBooking)
+                        .map(MapperBooking::mapToBookingDto)
+                        .collect(Collectors.toList());
+                break;
+        }
         if (bookings.size() == 0) {
             throw new NotFoundException("User is specified incorrectly");
         }
-        return paging(from, size, bookings).stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
+        return bookings;
     }
 
-    public List<BookingDto> getBookingByOwner(Long from, Optional<Long> size, Long userId, State state) {
-        List<Booking> bookings = filterBooking(bookingStorage.getBookingsOwner(userId), state).stream()
-                .peek(this::updateItemBooking)
-                .collect(Collectors.toList());
+    public List<BookingDto> getBookingByOwnerItem(Integer from, Optional<Integer> size, Long userId, State state) {
+        List<Booking> bookings = new ArrayList<>();
+        switch (state) {
+            case APPROVED:
+            case REJECTED:
+            case CANCELED:
+            case WAITING:
+                bookings = bookingStorage
+                        .getBookingsOwnerItemByStatus(userId, state, Paging.paging(from, size));
+                break;
+            case PAST:
+            case FUTURE:
+            case CURRENT:
+                bookings = bookingStorage
+                        .getBookingsOwnerItemByTime(userId, state, Paging.paging(from, size));
+                break;
+            case ALL:
+                bookings = bookingStorage
+                        .getBookingsOwnerItemAll(userId, Paging.paging(from, size));
+                break;
+        }
         if (bookings.size() == 0) {
             throw new NotFoundException("There are no bookings");
         }
-        return paging(from, size, bookings).stream().map(MapperBooking::mapToBookingDto).collect(Collectors.toList());
+        return bookings.stream()
+                .peek(this::updateItemBooking)
+                .map(MapperBooking::mapToBookingDto)
+                .collect(Collectors.toList());
     }
 
 
@@ -95,14 +140,14 @@ public class BookingService {
         Item item = booking.getItem();
         if (item.getNextBooking() != null && (item.getNextBooking().getStart().isBefore(LocalDateTime.now())
                 || item.getNextBooking().getStatus().equals(Status.REJECTED))) {
-            Optional<Booking> lastBooking = filterBooking(bookingStorage
-                    .getBookingsUser(booking.getItem().getOwner().getId()), State.PAST)
+            Optional<Booking> lastBooking = bookingStorage
+                    .getBookingsOwnerItemByTime(booking.getItem().getOwner().getId(), State.PAST, Pageable.unpaged())
                     .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId())).findFirst();
             lastBooking.ifPresent(item::setLastBooking);
-            Optional<Booking> nextBooking =
-                    filterBooking(bookingStorage.getBookingsUser(booking.getItem().getOwner().getId()), State.FUTURE)
-                            .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId()))
-                            .min(Comparator.comparing(Booking::getStart));
+            Optional<Booking> nextBooking = bookingStorage
+                    .getBookingsOwnerItemByTime(booking.getItem().getOwner().getId(), State.FUTURE, Pageable.unpaged())
+                    .stream().filter(booking1 -> Objects.equals(booking1.getItem().getId(), item.getId()))
+                    .min(Comparator.comparing(Booking::getStart));
             if (nextBooking.isPresent()) {
                 item.setNextBooking(nextBooking.get());
             } else {
@@ -170,7 +215,7 @@ public class BookingService {
         }
     }
 
-    private List<Booking> paging(Long from, Optional<Long> size, List<Booking> requests) {
+    private List<Booking> paging(Integer from, Optional<Integer> size, List<Booking> requests) {
         if (from < 0 || size.isPresent() && size.get() < 1) {
             throw new ValidationDataException("Date is not valid.");
         }
@@ -182,4 +227,3 @@ public class BookingService {
         return requests;
     }
 }
-

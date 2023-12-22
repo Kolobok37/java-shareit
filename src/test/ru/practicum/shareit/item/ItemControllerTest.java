@@ -82,6 +82,7 @@ class ItemControllerTest {
         comment.setText("comment1");
         comment.setItem(item);
         comment.setBooker(user);
+        comment.setId(1L);
         long userId = 1L;
         long itemId = 1L;
 
@@ -141,7 +142,7 @@ class ItemControllerTest {
         mockMvc.perform(get("/items").param("from", from).param("size", size).header("X-Sharer-User-Id", userId))
                 .andExpect(status().isOk());
 
-        verify(itemService).getAllUsersItem(Long.valueOf(from), Optional.of(Long.valueOf(size)), userId);
+        verify(itemService).getAllUsersItem(Integer.valueOf(from), Optional.of(Integer.valueOf(size)), userId);
     }
 
     @Test
@@ -153,7 +154,7 @@ class ItemControllerTest {
         mockMvc.perform(get("/items/search").param("from", from).param("text", text).param("size", size))
                 .andExpect(status().isOk());
 
-        verify(itemService).searchItem(Long.valueOf(from), Optional.of(Long.valueOf(size)), text);
+        verify(itemService).searchItem(Integer.valueOf(from), Optional.of(Integer.valueOf(size)), text);
     }
 
     @Test

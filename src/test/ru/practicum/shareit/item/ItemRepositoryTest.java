@@ -5,7 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
+import ru.practicum.shareit.Paging;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.User;
@@ -13,6 +15,7 @@ import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestPropertySource(properties = { "db.name=test"})
@@ -51,21 +54,20 @@ class ItemRepositoryTest {
 
     @Test
     void findByOwnerId() {
-        List<Item> itemList = itemRepository.findByOwnerId(1L);
+        List<Item> itemList = itemRepository.findByOwnerId(1L, Paging.paging(0, Optional.of(5)));
 
         assertTrue(itemList.size()==2);
     }
 
     @Test
     void findByNameContainingIgnoreCase() {
-        List<Item> itemList = itemRepository.findByNameContainingIgnoreCase("one");
-
-        assertTrue(itemList.size()==2);
+        List<Item> itemList = itemRepository.searchItem("one".toUpperCase(), Pageable.unpaged());
+        assertTrue(itemList.size()==1);
     }
 
     @Test
     void findByDescriptionContainingIgnoreCase() {
-        List<Item> itemList = itemRepository.findByDescriptionContainingIgnoreCase("good3");
+        List<Item> itemList = itemRepository.searchItem("good2".toUpperCase(), Pageable.unpaged());
 
         assertTrue(itemList.size()==1);
     }

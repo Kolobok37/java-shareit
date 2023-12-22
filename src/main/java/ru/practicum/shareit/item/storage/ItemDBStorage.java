@@ -2,12 +2,15 @@ package ru.practicum.shareit.item.storage;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.storage.UserRepository;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -37,21 +40,17 @@ public class ItemDBStorage implements ItemStorage {
     }
 
     @Override
-    public List<Item> getAllUserItems(Long userId) {
-        return itemRepository.findByOwnerId(userId);
+    public List<Item> getAllUserItems(Long userId, Pageable pageable) {
+        return itemRepository.findByOwnerId(userId, pageable);
     }
 
     @Override
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
+    public List<Item> getAllItems(Pageable pageable) {
+        return itemRepository.findAll(pageable).toList();
     }
 
-    public List<Item> getSearchItem(String text) {
-        Set<Item> n = itemRepository.findByNameContainingIgnoreCase(text).stream().collect(Collectors.toSet());
-        Set<Item> d = itemRepository.findByDescriptionContainingIgnoreCase(text).stream().collect(Collectors.toSet());
-        Set<Item> a = new HashSet<>();
-        a.addAll(n);
-        a.addAll(d);
-        return a.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
+    public List<Item> getSearchItem(String text, Pageable pageable) {
+        List<Item> items = itemRepository.searchItem(text.toUpperCase(), pageable);
+        return items.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
     }
 }

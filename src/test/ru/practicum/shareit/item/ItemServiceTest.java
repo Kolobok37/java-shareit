@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.State;
@@ -78,13 +79,10 @@ class ItemServiceTest {
                 "itemIsGood", true, new ArrayList<>(), null, null, 1L);
         Booking booking = new Booking(1L, LocalDateTime.MIN, LocalDateTime.MAX,
                 item, user, Status.APPROVED);
-        //List<Booking> bookings = new ArrayList<>(List.of(booking));
-        //item2.setLastBooking(booking);
 
         when(itemDBStorage.getItem(Mockito.anyLong())).thenReturn(item);
-        when(bookingService.filterBooking(Mockito.anyList(), Mockito.any(State.class))).thenReturn(new ArrayList<>());
-        // when(bookingDBStorage.getBookingsOwner(anyLong())).thenReturn(bookings);
-        // when(bookingService.filterBooking(Mockito.anyList(), eq(State.PAST))).thenReturn(bookings);
+        when(bookingDBStorage
+                .getBookingsOwnerItemByTime(Mockito.anyLong(), any(),any())).thenReturn(new ArrayList<>());
 
         ItemDto itemDto = mockItemService.getItemDto(1L, 1L);
 
@@ -104,12 +102,15 @@ class ItemServiceTest {
 
 
         when(itemDBStorage.getItem(Mockito.anyLong())).thenReturn(item);
-        when(bookingService.filterBooking(Mockito.anyList(), Mockito.any(State.class))).thenReturn(bookings);
+        when(itemDBStorage.updateItem(any())).thenReturn(item);
+
+        when(bookingDBStorage.getBookingsOwnerItemByTime(Mockito.anyLong(),Mockito.eq(State.FUTURE), any())).thenReturn(bookings);
+        when(bookingDBStorage.getBookingsOwnerItemByTime(Mockito.anyLong(),Mockito.eq(State.PAST), any())).thenReturn(new ArrayList<>());
+
 
 
         ItemDto itemDto = mockItemService.getItemDto(1L, 1L);
 
-        item2.setLastBooking(booking);
         item2.setNextBooking(booking);
         assertEquals(MapperItem.mapToItemDto(item2), itemDto);
     }
@@ -127,7 +128,10 @@ class ItemServiceTest {
 
 
         when(itemDBStorage.getItem(Mockito.anyLong())).thenReturn(item);
-        when(bookingService.filterBooking(Mockito.anyList(), Mockito.any(State.class))).thenReturn(bookings);
+        when(itemDBStorage.updateItem(any())).thenReturn(item);
+        when(bookingDBStorage.getBookingsOwnerItemByTime(Mockito.anyLong(),Mockito.eq(State.FUTURE), any())).thenReturn(bookings);
+        when(bookingDBStorage.getBookingsOwnerItemByTime(Mockito.anyLong(),Mockito.eq(State.PAST), any())).thenReturn(new ArrayList<>());
+
 
         ItemDto itemDto = mockItemService.getItemDto(1L, 2L);
 
@@ -311,9 +315,9 @@ class ItemServiceTest {
                 "itemIsG1", true, new ArrayList<>(), null, null, 1L);
         List<Item> items = new ArrayList<>(List.of(item, item2));
 
-        when(itemDBStorage.getAllUserItems(anyLong())).thenReturn(items);
+        when(itemDBStorage.getAllUserItems(anyLong(),any())).thenReturn(items);
 
-        List<ItemDto> itemsDto = mockItemService.getAllUsersItem(0L, Optional.empty(), 1L);
+        List<ItemDto> itemsDto = mockItemService.getAllUsersItem(0, Optional.empty(), 1L);
 
         assertEquals(MapperItem.mapToItemDto(item), itemsDto.get(0));
         assertEquals(MapperItem.mapToItemDto(item2), itemsDto.get(1));
@@ -321,10 +325,10 @@ class ItemServiceTest {
 
     @Test
     void searchItem_whenTextSearchIsBlank_returnEmptyList() {
-        List<ItemDto> items = mockItemService.searchItem(1L, Optional.of(5L), "");
+        List<ItemDto> items = mockItemService.searchItem(1, Optional.of(5), "");
 
         assertTrue(items.isEmpty());
-        verify(itemDBStorage, never()).getSearchItem(Mockito.any());
+        verify(itemDBStorage, never()).getSearchItem(Mockito.any(),any());
     }
 
     @Test
@@ -344,18 +348,17 @@ class ItemServiceTest {
         Item itemOldCopy2 = new Item(2L, user, "item2",
                 "itemIsBed", true, new ArrayList<>(), null, null, 1L);
         itemOldCopy.setNextBooking(booking);
-        itemOldCopy.setLastBooking(booking);
+        //itemOldCopy.setLastBooking(booking);
         itemOldCopy2.setNextBooking(booking);
-        itemOldCopy2.setLastBooking(booking);
+        //itemOldCopy2.setLastBooking(booking);
 
-
-        when(itemDBStorage.getSearchItem(anyString())).thenReturn(new ArrayList<>(List.of(item, item2)));
-        when(bookingService.filterBooking(anyList(), any(State.class))).thenReturn(bookings);
-        when(bookingDBStorage.getBookingsOwner(anyLong())).thenReturn(bookings);
+        when(itemDBStorage.updateItem(any())).thenReturn(item);
+        when(itemDBStorage.getSearchItem(anyString(),any())).thenReturn(new ArrayList<>(List.of(item, item2)));
         when(itemDBStorage.getItem(anyLong())).thenReturn(item);
+        when(bookingDBStorage.getBookingsOwnerItemByTime(Mockito.anyLong(),Mockito.eq(State.FUTURE), any())).thenReturn(bookings);
+        when(bookingDBStorage.getBookingsOwnerItemByTime(Mockito.anyLong(),Mockito.eq(State.PAST), any())).thenReturn(new ArrayList<>());
 
-
-        List<ItemDto> items = mockItemService.searchItem(0L, Optional.of(5L), "Text");
+        List<ItemDto> items = mockItemService.searchItem(0, Optional.of(5), "Text");
 
         assertTrue(items.size() == 2);
         assertEquals(MapperItem.mapToItemDto(itemOldCopy), items.get(0));
@@ -368,10 +371,10 @@ class ItemServiceTest {
                 "itemIsGood", true, new ArrayList<>(), null, null, 1L);
         Item item2 = new Item(1L, new User(2L, "alex1", "alex1@gmail.com"), "item2",
                 "itemIsBed", false, new ArrayList<>(), null, null, 1L);
-        when(itemDBStorage.getSearchItem(anyString())).thenReturn(new ArrayList<>(List.of(item, item2)));
+        when(itemDBStorage.getSearchItem(anyString(),any())).thenReturn(new ArrayList<>(List.of(item, item2)));
 
 
-        List<ItemDto> items = mockItemService.searchItem(0L, Optional.of(5L), "Text");
+        List<ItemDto> items = mockItemService.searchItem(0, Optional.of(5), "Text");
 
         assertTrue(items.size() == 1);
         assertEquals(MapperItem.mapToItemDto(item), items.get(0));
@@ -389,9 +392,9 @@ class ItemServiceTest {
         Item item4 = new Item(4L, new User(1L, "alex1", "alex1@gmail.com"), "item4",
                 "itemIsBed3", true, new ArrayList<>(), null, null, 1L);
 
-        when(itemDBStorage.getSearchItem(anyString())).thenReturn(new ArrayList<>(List.of(item, item2, item3, item4)));
+        when(itemDBStorage.getSearchItem(anyString(),any())).thenReturn(new ArrayList<>(List.of(item2, item3)));
 
-        List<ItemDto> items = mockItemService.searchItem(1L, Optional.of(2L), "Text");
+        List<ItemDto> items = mockItemService.searchItem(1, Optional.of(2), "Text");
 
         assertTrue(items.size() == 2);
         assertEquals(MapperItem.mapToItemDto(item2), items.get(0));

@@ -39,13 +39,13 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllUsersItem(@RequestHeader("X-Sharer-User-Id") Long userId,@RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size) {
-        return itemService.getAllUsersItem(from,size,userId);
+    public List<ItemDto> getAllUsersItem(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(defaultValue = "0") Integer from, @RequestParam Optional<Integer> size) {
+        return itemService.getAllUsersItem(from, size, userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestParam String text,@RequestParam(defaultValue = "0") Long from, @RequestParam Optional<Long> size) {
-        return itemService.searchItem(from,size,text);
+    public List<ItemDto> searchItem(@RequestParam String text, @RequestParam(defaultValue = "0") Integer from, @RequestParam Optional<Integer> size) {
+        return itemService.searchItem(from, size, text);
     }
 
     @PatchMapping("/{itemId}")
