@@ -53,16 +53,15 @@ public class RequestService {
     }
 
 
-    private Pageable paging(Integer from, Optional<Integer> size){
+    private Pageable paging(Integer from, Optional<Integer> size) {
         Pageable pageable;
         if (from < 0 || size.isPresent() && size.get() < 1) {
             throw new ValidationDataException("Date is not valid.");
         }
         if (size.isPresent()) {
-            pageable = PageRequest.of(from/size.get(), size.get(),Sort.by("created").descending());
-        }
-        else
-            pageable = PageRequest.of(from,100, Sort.by("created").descending());
+            pageable = PageRequest.of(from / size.get(), size.get(), Sort.by("created").descending());
+        } else
+            pageable = PageRequest.of(from, 100, Sort.by("created").descending());
         return pageable;
     }
 }
