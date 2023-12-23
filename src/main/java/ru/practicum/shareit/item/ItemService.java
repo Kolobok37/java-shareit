@@ -2,7 +2,9 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Paging;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.State;
@@ -17,6 +19,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemDBStorage;
+import ru.practicum.shareit.request.Request;
+import ru.practicum.shareit.request.RequestStorage;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserDBStorage;
 
@@ -42,6 +46,9 @@ public class ItemService {
     private UserDBStorage userStorage;
 
     @Autowired
+    private RequestStorage requestStorage;
+
+    @Autowired
     private CommentRepository commentRepository;
 
     public ItemDto getItemDto(Long itemId, long userId) {
@@ -54,19 +61,26 @@ public class ItemService {
     }
 
     public ItemDto createItem(Long userId, Item item) {
-        User user = validationUser(userId);
+        User user = userStorage.getUser(userId);
         item.setOwner(user);
-        Item newItem = itemStorage.createItem(item);
-        return MapperItem.mapToItemDto(newItem);
+        if (item.getRequestId() != null) {
+            Request request = requestStorage.getRequest(item.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("Request is not found."));
+            Item newItem = itemStorage.createItem(item);
+            List<Item> items = request.getItems();
+            items.add(newItem);
+            request.setItems(items);
+            requestStorage.createRequest(request);
+            return MapperItem.mapToItemDto(newItem);
+        }
+        return MapperItem.mapToItemDto(itemStorage.createItem(item));
     }
 
     public ItemDto updateItem(Long userId, Long itemId, Item item) {
         item.setId(itemId);
-        User user = validationUser(userId);
         if (!Objects.equals(itemStorage.getItem(item.getId()).getOwner().getId(), userId)) {
             throw new NotFoundException("User is specified incorrectly");
         }
-        item.setOwner(user);
         Item oldItem = itemStorage.getItem(itemId);
         if (item.getName() != null && !item.getName().equals(oldItem.getName())) {
             oldItem.setName(item.getName());
@@ -77,70 +91,31 @@ public class ItemService {
         if (item.getAvailable() != null && !item.getAvailable() == oldItem.getAvailable()) {
             oldItem.setAvailable(item.getAvailable());
         }
-        itemStorage.updateItem(oldItem);
-
-        Item itemEnd = itemStorage.getItem(itemId);
-        return MapperItem.mapToItemDto(itemEnd);
+        return MapperItem.mapToItemDto(itemStorage.updateItem(oldItem));
     }
 
-    public List<ItemDto> getAllUsersItem(Long userId) {
-        validationUser(userId);
-        return itemStorage.getAllUserItems(userId).stream().peek(this::updateLastNextBooking)
+    public List<ItemDto> getAllUsersItem(Integer from, Optional<Integer> size, Long userId) {
+        userStorage.getUser(userId);
+        return itemStorage.getAllUserItems(userId, Paging.paging(from, size)).stream().peek(this::updateLastNextBooking)
                 .map(MapperItem::mapToItemDto).collect(Collectors.toList());
     }
 
-    public List<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(Integer from, Optional<Integer> size, String text) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemStorage.getAllItems().stream()
-                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) ||
-                        item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .filter(Item::getAvailable).peek(this::updateLastNextBooking)
-                .peek(this::updateLastNextBooking).map(MapperItem::mapToItemDto)
+        return itemStorage.getSearchItem(text, Paging.paging(from, size)).stream()
+                .filter(Item::getAvailable)
+                .peek(this::updateLastNextBooking)
+                .map(MapperItem::mapToItemDto)
                 .collect(Collectors.toList());
-    }
-
-    private User validationUser(Long userId) {
-        Optional<User> user = userStorage.getAllUser().stream()
-                .filter(user1 -> Objects.equals(user1.getId(), userId)).findFirst();
-        if (user.isEmpty()) {
-            throw new NotFoundException("User is not specified");
-        }
-        return user.get();
-    }
-
-    private Item updateLastNextBooking(Item item) {
-        List<Booking> bookingsNext = bookingService
-                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), State.FUTURE)
-                .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
-                .collect(Collectors.toList());
-        if (bookingsNext.size() != 0) {
-            item.setNextBooking(bookingsNext.stream().max((b1, b2) -> b2.getStart().compareTo(b1.getStart())).get());
-            updateItem(item.getOwner().getId(), item.getId(), item);
-        }
-        List<Booking> bookingsLast = bookingService
-                .filterBooking(bookingDBStorage.getBookingsOwner(item.getOwner().getId()), State.PAST)
-                .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
-                .collect(Collectors.toList());
-        if (bookingsLast.size() != 0) {
-            item.setLastBooking(bookingsLast.stream().findFirst().get());
-            updateItem(item.getOwner().getId(), item.getId(), item);
-        }
-
-        return item;
-    }
-
-    private Item getItem(long itemId) {
-        return itemStorage.getItem(itemId);
     }
 
     public CommentDto createComment(Long userId, Long itemId, Comment comment) {
         Item item = getItem(itemId);
         try {
-            if (bookingService.getBookingByUser(userId, State.PAST).stream()
+            if (bookingService.getBookingByUser(Integer.valueOf(0), Optional.empty(), userId, State.PAST).stream()
                     .filter(bookingDto -> Objects.equals(bookingDto.getItem().getId(), itemId))
-                    .filter(bookingDto -> Objects.equals(bookingDto.getBooker().getId(), userId))
                     .findFirst().isEmpty()) {
                 throw new ValidationDataException("User don't booking this item.");
             }
@@ -154,5 +129,41 @@ public class ItemService {
         comment = commentRepository.save(comment);
         itemStorage.updateItem(item);
         return MapperComment.mapToCommentDto(comment);
+    }
+
+    private Item updateLastNextBooking(Item item) {
+        List<Booking> bookingsNext = bookingDBStorage
+                .getBookingsOwnerItemByTime(item.getOwner().getId(), State.FUTURE, Pageable.unpaged())
+                .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
+                .collect(Collectors.toList());
+        if (bookingsNext.size() != 0) {
+            item.setNextBooking(bookingsNext.stream().max((b1, b2) -> b2.getStart().compareTo(b1.getStart())).get());
+            updateItem(item.getOwner().getId(), item.getId(), item);
+        }
+        List<Booking> bookingsLast = bookingDBStorage
+                .getBookingsOwnerItemByTime(item.getOwner().getId(), State.PAST, Pageable.unpaged())
+                .stream().filter(booking -> Objects.equals(booking.getItem().getId(), item.getId()))
+                .collect(Collectors.toList());
+        if (bookingsLast.size() != 0) {
+            item.setLastBooking(bookingsLast.stream().findFirst().get());
+            updateItem(item.getOwner().getId(), item.getId(), item);
+        }
+        return item;
+    }
+
+    private Item getItem(long itemId) {
+        return itemStorage.getItem(itemId);
+    }
+
+    private List<Item> paging(Long from, Optional<Long> size, List<Item> requests) {
+        if (from < 0 || size.isPresent() && size.get() < 1) {
+            throw new ValidationDataException("Date is not valid.");
+        }
+        requests = requests.stream()
+                .skip(from).collect(Collectors.toList());
+        if (size.isPresent()) {
+            requests = requests.stream().limit(size.get()).collect(Collectors.toList());
+        }
+        return requests;
     }
 }

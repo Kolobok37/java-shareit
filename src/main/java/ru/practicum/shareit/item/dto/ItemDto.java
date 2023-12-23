@@ -7,9 +7,6 @@ import ru.practicum.shareit.user.User;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @AllArgsConstructor
 public class ItemDto {
@@ -22,4 +19,5 @@ public class ItemDto {
     private List<CommentDto> comments;
     private BookingItemDto lastBooking;
     private BookingItemDto nextBooking;
+    private Long requestId;
 }

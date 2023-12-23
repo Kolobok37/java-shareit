@@ -20,9 +20,10 @@ import java.util.List;
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "item_id")
     private Long id;
     @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
     @Column(nullable = false)
     @NotNull(message = "Name is not be null")
@@ -36,15 +37,20 @@ public class Item {
     @NotNull(message = "Available is not be null")
     private Boolean available;
 
-    @ElementCollection
-    @PrimaryKeyJoinColumn(name = "id")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "item_id")
     private List<Comment> comments;
 
     @OneToOne
+    @JoinColumn(name = "last_booking_id")
     private Booking lastBooking;
 
     @OneToOne
+    @JoinColumn(name = "next_booking_id")
     private Booking nextBooking;
+
+    @Column(name = "request_id")
+    private Long requestId;
 
     public Item() {
     }

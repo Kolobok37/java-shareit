@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * TODO Sprint add-controllers.
@@ -38,13 +39,13 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllUsersItem(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getAllUsersItem(userId);
+    public List<ItemDto> getAllUsersItem(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam(defaultValue = "0") Integer from, @RequestParam Optional<Integer> size) {
+        return itemService.getAllUsersItem(from, size, userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestParam String text) {
-        return itemService.searchItem(text);
+    public List<ItemDto> searchItem(@RequestParam String text, @RequestParam(defaultValue = "0") Integer from, @RequestParam Optional<Integer> size) {
+        return itemService.searchItem(from, size, text);
     }
 
     @PatchMapping("/{itemId}")

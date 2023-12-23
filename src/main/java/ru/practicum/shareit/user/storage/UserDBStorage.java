@@ -28,11 +28,6 @@ public class UserDBStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
-        return userRepository.save(user);
-    }
-
-    @Override
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }

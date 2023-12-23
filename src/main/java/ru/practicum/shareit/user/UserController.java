@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @PatchMapping(value = "/{userId}", consumes = {"application/json"})
-    public UserDto updateUser(@Valid @RequestBody User user, @PathVariable Long userId) {
+    public UserDto updateUser(@RequestBody User user, @PathVariable Long userId) {
         user.setId(userId);
         return userService.updateUser(user);
     }

@@ -7,7 +7,7 @@ public class MapperItem {
     public static ItemDto mapToItemDto(Item item) {
         ItemDto itemDto = new ItemDto(item.getId(), item.getOwner(),
                 item.getName(), item.getDescription(), item.getAvailable(),
-                MapperComment.mapToCommentDto(item.getComments()), null, null);
+                MapperComment.mapToCommentDto(item.getComments()), null, null,item.getRequestId());
         if (item.getLastBooking() != null) {
             itemDto.setLastBooking(MapperBooking.mapToBookingItemDto(item.getLastBooking()));
         }
@@ -21,7 +21,7 @@ public class MapperItem {
         Item item = new Item(itemDto.getId(), itemDto.getOwner(),
                 itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable(), null,
                 null,
-                null);
+                null,null);
         return item;
     }
 
