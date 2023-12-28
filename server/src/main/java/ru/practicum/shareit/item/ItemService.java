@@ -24,7 +24,6 @@ import ru.practicum.shareit.request.RequestStorage;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserDBStorage;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -137,8 +136,7 @@ public class ItemService {
         if (!bookingsNext.isEmpty()) {
             item.setNextBooking(bookingsNext.stream().max((b1, b2) -> b2.getStart().compareTo(b1.getStart())).get());
             updateItem(item.getOwner().getId(), item.getId(), item);
-        }
-        else {
+        } else {
             item.setNextBooking(null);
             updateItem(item.getOwner().getId(), item.getId(), item);
         }

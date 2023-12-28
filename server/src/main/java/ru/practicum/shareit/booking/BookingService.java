@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.dto.BookingInDto;
 import ru.practicum.shareit.booking.dto.MapperBooking;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ReservationException;
-import ru.practicum.shareit.exception.StatusBookingException;
 import ru.practicum.shareit.exception.ValidationDataException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;

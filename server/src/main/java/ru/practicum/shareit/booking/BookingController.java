@@ -6,7 +6,6 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingInDto;
 import ru.practicum.shareit.exception.StatusBookingException;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
