@@ -14,7 +14,7 @@ import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.MapperUser;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,7 +41,7 @@ public class RequestService {
     }
 
     public RequestDto createRequest(Long userId, Request request) {
-        request.setCreated(ZonedDateTime.now());
+        request.setCreated(LocalDateTime.now());
         request.setUser(MapperUser.mapToUser(userService.getUser(userId)));
         return MapperRequest.mapToRequestDto(requestStorage.createRequest(request));
     }

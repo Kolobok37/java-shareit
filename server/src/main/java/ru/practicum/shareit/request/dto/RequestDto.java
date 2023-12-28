@@ -5,6 +5,7 @@ import lombok.Data;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.User;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class RequestDto {
     private Long id;
     private String description;
-    private ZonedDateTime created;
+    private LocalDateTime created;
     private User user;
     private List<ItemDto> items;
 }

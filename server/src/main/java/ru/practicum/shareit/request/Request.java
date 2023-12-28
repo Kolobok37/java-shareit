@@ -8,6 +8,7 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class Request {
     @NotBlank(message = "Description is not be empty.")
     private String description;
     @Column(name = "date_created", nullable = false)
-    private ZonedDateTime created;
+    private LocalDateTime created;
     @ManyToOne()
     @JoinColumn(name = "user_id")
     private User user;

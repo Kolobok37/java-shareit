@@ -24,7 +24,7 @@ import ru.practicum.shareit.request.RequestStorage;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.storage.UserDBStorage;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,7 +121,7 @@ public class ItemService {
         }
         comment.setItem(item);
         comment.setBooker(userStorage.getUser(userId));
-        comment.setCreated(ZonedDateTime.now());
+        comment.setCreated(LocalDateTime.now());
         item.getComments().add(comment);
         comment = commentRepository.save(comment);
         itemStorage.updateItem(item);

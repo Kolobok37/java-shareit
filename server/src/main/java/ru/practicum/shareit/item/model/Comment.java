@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 @Data
@@ -27,7 +28,7 @@ public class Comment {
     private User booker;
 
     @Column(name = "date_comment", nullable = false)
-    ZonedDateTime created;
+    LocalDateTime created;
     @NotBlank(message = "Text cannot be empty")
     @Column(name = "text", nullable = false)
     private String text;
